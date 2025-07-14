@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly2Mermaid", "Assembl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MermaidExtractionEngine", "MermaidExtractionEngine\MermaidExtractionEngine.csproj", "{1C1FE711-D38F-4004-AB25-9600505CD5F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MermaidExtractionTests", "MermaidExtractionTests\MermaidExtractionTests.csproj", "{343D4C30-46DE-7411-3F47-D9E26757024F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{1C1FE711-D38F-4004-AB25-9600505CD5F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C1FE711-D38F-4004-AB25-9600505CD5F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C1FE711-D38F-4004-AB25-9600505CD5F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343D4C30-46DE-7411-3F47-D9E26757024F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343D4C30-46DE-7411-3F47-D9E26757024F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343D4C30-46DE-7411-3F47-D9E26757024F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343D4C30-46DE-7411-3F47-D9E26757024F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

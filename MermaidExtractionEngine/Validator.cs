@@ -1,46 +1,47 @@
-﻿namespace MermaidExtractionEngine
+﻿using MermaidExtractionEngine.Interfaces;
+
+namespace MermaidExtractionEngine;
+
+public class Validator( IFileProvider fileProvider, IDirectoryProvider directoryProvider ) : IValidator
 {
-    public class Validator: IValidator
+    private readonly IFileProvider _fileProvider = fileProvider;
+    private readonly IDirectoryProvider _directoryProvider = directoryProvider;
+
+    public (bool, string) ValidateDirectoryPath( string path )
     {
-        public (bool, string) ValidateDirectoryPath( string path )
+        if (string.IsNullOrWhiteSpace( path ))
         {
-            if (string.IsNullOrWhiteSpace( path ))
-            {
-                return (false, "Please provide input directory!");
-            }
-
-            var di = new DirectoryInfo( path );
-            if (di is null || di.Parent is null || !di.Parent.Exists)
-            {
-                return (false, "Please provide a valid input directory!");
-            }
-
-            return (true, string.Empty);
+            return (false, "Please provide input directory!");
         }
 
-        public (bool, string) ValidateFilePath( string path, bool strict = true )
+        if (!_directoryProvider.Exists( path ))
         {
-            if (string.IsNullOrWhiteSpace( path ))
-            {
-                return (false, "Please provide a file name!");
-            }
-
-            if (strict && !File.Exists( path )) 
-            {
-                return (false, "Please provide a valid path to a .Net executable file");
-            }
-
-            if (!strict && !File.Exists( path ))
-            {
-                var di = new DirectoryInfo( path );
-
-                if (di is null || di.Parent is null || !di.Parent.Exists)
-                {
-                    return (false, "Please provide a path containing a valid directory!");
-                }
-            }
-
-            return (true, string.Empty);
+            return (false, "Please provide a valid input directory!");
         }
+
+        return (true, string.Empty);
+    }
+
+    public (bool, string) ValidateFilePath( string path, bool strict = true )
+    {
+        if (string.IsNullOrWhiteSpace( path ))
+        {
+            return (false, "Please provide a file name!");
+        }
+
+        if (strict && !_fileProvider.Exists( path )) 
+        {
+            return (false, "Please provide a valid path to a .Net executable file!");
+        }
+
+        if (!strict && !_fileProvider.Exists( path ))
+        {
+            if (!_directoryProvider.Exists( path ))
+            {
+                return (false, "Please provide a path containing a valid directory!");
+            }
+        }
+
+        return (true, string.Empty);
     }
 }

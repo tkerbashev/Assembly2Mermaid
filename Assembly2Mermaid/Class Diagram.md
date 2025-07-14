@@ -48,13 +48,17 @@ classDiagram
         -btnCopy: Button
     }
 
+    class Program {
+    <<>>
+    }
+
     class Diagram {
-        +AddComment()
         -Finish()
         -AddClass()
         -FinishClass()
         -AddMember()
         -AddInheritance()
+        -AddAssociations()
         -Result: String
         -writer: StringWriter
     }
@@ -62,18 +66,23 @@ classDiagram
     class Extractor {
         +Extract()
         +Messages: String
+        +HasProcessedValidFile: Boolean
         -ScanDirectory()
+        -CheckIfValidAssembly()
         -ExamineFile()
         -ExamineType()
         -diagram: Diagram
         -assemblyTypes: Types
+        -_fileProvider: IFileProvider
+        -_directoryProvider: IDirectoryProvider
+        -_assemblyProviderFactory: IAssemblyProviderFactory
+        -ErrorMessages: List~String~
         -systemMethodNames: List~String~
     }
 
-    class IExtractor {
+    class IFileProvider {
         <<Interface>>
-        +Extract()
-        +Messages: String
+        +Exists()
     }
 
     class IValidator {
@@ -82,42 +91,104 @@ classDiagram
         +ValidateFilePath()
     }
 
+    class FileProvider {
+    <<>>
+    }
+
     class Types {
         +Add()
+        +AddAssemblyName()
         +ListDescendants()
         +ListAssociations()
         -PopulateDescendants()
         -PopulateAssociations()
         -GetAllTypes()
+        -GetReferencedTypesNames()
+        -GetFieldsReferences()
+        -GetMethodsReferences()
+        -GetNestedTypesReferences()
         -typerecords: List~TypeRecord~
         -allTypes: Lazy`1
-        -TypeRecord: unknown
+        -_participatingAssemblies: List~String~
+        -TypeRecord: Object
     }
 
     class Validator {
         +ValidateDirectoryPath()
         +ValidateFilePath()
+        -_fileProvider: IFileProvider
+        -_directoryProvider: IDirectoryProvider
+    }
+
+    class AssemblyProvider {
+        +LoadFrom()
+        +GetTypes()
+        +Name: String
+        +IsValid: Boolean
+        -_assembly: Assembly
+    }
+
+    class AssemblyProviderFactory {
+        +NewAssemblyProvider: IAssemblyProvider
+    }
+
+    class DirectoryProvider {
+    <<>>
+    }
+
+    class IAssemblyProvider {
+        <<Interface>>
+        +LoadFrom()
+        +GetTypes()
+        +Name: String
+        +IsValid: Boolean
+    }
+
+    class IAssemblyProviderFactory {
+        <<Interface>>
+        +NewAssemblyProvider: IAssemblyProvider
+    }
+
+    class IDirectoryProvider {
+        <<Interface>>
+        +GetFiles()
+        +Exists()
+    }
+
+    class IExtractor {
+        <<Interface>>
+        +Extract()
+        +Messages: String
+        +HasProcessedValidFile: Boolean
     }
 
     class TypeRecord {
         +AssemblyType: Type
-        +AssemblyName: String
         +Descendants: List~String~
         +Associates: List~String~
     }
 
 
-    Extractor --|> IExtractor
+    FileProvider --|> IFileProvider
     Validator --|> IValidator
+    AssemblyProvider --|> IAssemblyProvider
+    AssemblyProviderFactory --|> IAssemblyProviderFactory
+    DirectoryProvider --|> IDirectoryProvider
+    Extractor --|> IExtractor
     Assembly2MermaidForm --> IValidator
     Assembly2MermaidForm --> IExtractor
-    Assembly2MermaidForm --> FrmDiagram
     Diagram --> Types
     Extractor --> Diagram
     Extractor --> Types
+    Extractor --> IFileProvider
+    Extractor --> IDirectoryProvider
+    Extractor --> IAssemblyProviderFactory
     Types --> TypeRecord
+    Validator --> IFileProvider
+    Validator --> IDirectoryProvider
+    AssemblyProviderFactory --> IAssemblyProvider
+    IAssemblyProviderFactory --> IAssemblyProvider
 
 ```
 
 -----------------------------------------------
-

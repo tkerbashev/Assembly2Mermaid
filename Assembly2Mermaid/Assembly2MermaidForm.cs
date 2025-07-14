@@ -1,4 +1,4 @@
-﻿using MermaidExtractionEngine;
+﻿using MermaidExtractionEngine.Interfaces;
 
 namespace Assembly2Mermaid
 {
@@ -41,13 +41,9 @@ namespace Assembly2Mermaid
                     var diagram = _extractor.Extract( rbDirectory.Checked, tbSource.Text );
                     // Output to screen if that option is selected,
                     // but if a single file is selected that is not in a valid format, only display a message at the bottom
-                    if (!string.IsNullOrEmpty( _extractor.Messages ))
+                    lblError.Text = _extractor.Messages;
+                    if (_extractor.HasProcessedValidFile)
                     {
-                        lblError.Text = _extractor.Messages;
-                    }
-                    if (!(rbFile.Checked && !string.IsNullOrEmpty(_extractor.Messages)) && diagram.Length > 0)
-                    {
-                        //  Either multiple files are selected (at least one is valid) or one that is valid is selected
                         if (rbScreenOutput.Checked)
                         {
                             var diagramForm = new FrmDiagram( diagram );
@@ -55,8 +51,12 @@ namespace Assembly2Mermaid
                         }
                         else
                         {
-                            File.WriteAllText(tbOutput.Text, diagram);
+                            File.WriteAllText( tbOutput.Text, diagram );
                         }
+                    }
+                    else
+                    {
+                        lblError.Text = rbFile.Checked ? "The selected file is not a valid .Net assembly file!" : "No valid files were found to be processed!";
                     }
                 }
                 catch (Exception ex) 

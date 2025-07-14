@@ -1,4 +1,5 @@
 using MermaidExtractionEngine;
+using MermaidExtractionEngine.Providers;
 
 namespace Assembly2Mermaid
 {
@@ -13,8 +14,11 @@ namespace Assembly2Mermaid
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            var validator = new Validator();
-            var extractor = new Extractor();
+            var fileProvider = new FileProvider();
+            var directoryProvider = new DirectoryProvider( );
+            var assemblyProviderFactory = new AssemblyProviderFactory();
+            var validator = new Validator( fileProvider, directoryProvider );
+            var extractor = new Extractor( fileProvider, directoryProvider, assemblyProviderFactory );
             Application.Run(new Assembly2MermaidForm(validator, extractor));
         }
     }
