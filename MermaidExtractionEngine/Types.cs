@@ -118,6 +118,7 @@ internal class Types
 
         GetFieldsReferences( type, ref result );
         GetMethodsReferences( type, ref result );
+        GetConstructorReferences( type, ref result );
         GetNestedTypesReferences( type, ref result );
 
         return result;
@@ -168,33 +169,76 @@ internal class Types
 
             if (!IsSystemType( method.ReturnParameter.ParameterType ))
             {
-                var pureReturnType = method.ReturnParameter.ParameterType.IsArray ?
-                    method.ReturnParameter.ParameterType.GetElementType( ) : method.ReturnParameter.ParameterType;
-                var returnTypeName = pureReturnType?.Name;
-                var returnTypeAssemblyName = method.ReturnType.Assembly.ManifestModule.Name;
-                if (_participatingAssemblies.Contains( returnTypeAssemblyName ) && returnTypeName != null &&
-                    !typeReferences.Contains( returnTypeName ) && returnTypeName != type.Name)
-                {
-                    typeReferences.Add( returnTypeName );
+                foreach ( var pureReturnType in Types.GetPureReturnTypes( method.ReturnParameter.ParameterType ) )
+                    {
+                    var returnTypeName = pureReturnType?.Name;
+                    var returnTypeAssemblyName = pureReturnType?.Assembly.ManifestModule.Name ?? string.Empty;
+                    if (_participatingAssemblies.Contains( returnTypeAssemblyName ) && returnTypeName != null &&
+                        !typeReferences.Contains( returnTypeName ) && returnTypeName != type.Name)
+                    {
+                        typeReferences.Add( returnTypeName );
+                    }
                 }
             }
 
             //Second, check the parameters
             var methodParameters = method.GetParameters( );
-            foreach (var parameter in methodParameters)
-            {
-                if (IsSystemType( parameter.ParameterType ))
-                { continue; }
+            AddMethodParameters( type.Name, methodParameters, ref typeReferences );
+        }
+    }
 
-                var pureParameterType = parameter.ParameterType.IsArray ?
-                    parameter.ParameterType.GetElementType( ) : parameter.ParameterType;
-                var parameterTypeName = pureParameterType?.Name;
-                var parameterTypeAssemblyName = parameter.ParameterType.Assembly.ManifestModule.Name;
-                if (_participatingAssemblies.Contains( parameterTypeAssemblyName ) && parameterTypeName != null &&
-                    !typeReferences.Contains( parameterTypeName ) && parameterTypeName != type.Name)
-                {
-                    typeReferences.Add( parameterTypeName );
-                }
+    private static List<Type> GetPureReturnTypes( Type originalReturnType)
+    {
+        var result = new List<Type>();
+
+        var pureReturnType = originalReturnType.IsArray ? originalReturnType.GetElementType( ) : originalReturnType;
+
+        if ( pureReturnType is null )
+        {
+            return result;
+        }
+
+        if (pureReturnType.IsGenericType)
+        {
+            foreach (var nestedReturnType in pureReturnType.GetGenericArguments( ) ) 
+            {
+               result.AddRange( Types.GetPureReturnTypes( nestedReturnType ) );
+            }
+        }
+        else
+        {
+            result.Add( pureReturnType );
+        }
+
+        return result;
+    }
+
+    private void GetConstructorReferences( Type type, ref List<string> typeReferences )
+    {
+        var constructors = type.GetConstructors( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+
+        foreach (var constructor in constructors )
+        {
+            var constructorParameters = constructor.GetParameters( );
+            AddMethodParameters( type.Name, constructorParameters, ref typeReferences );
+        }
+    }
+
+    private void AddMethodParameters( string typeName, ParameterInfo[] methodParameters, ref List<string> typeReferences )
+    {
+        foreach (var parameter in methodParameters)
+        {
+            if (IsSystemType( parameter.ParameterType ))
+            { continue; }
+
+            var pureParameterType = parameter.ParameterType.IsArray ?
+                parameter.ParameterType.GetElementType( ) : parameter.ParameterType;
+            var parameterTypeName = pureParameterType?.Name;
+            var parameterTypeAssemblyName = parameter.ParameterType.Assembly.ManifestModule.Name;
+            if (_participatingAssemblies.Contains( parameterTypeAssemblyName ) && parameterTypeName != null &&
+                !typeReferences.Contains( parameterTypeName ) && parameterTypeName != typeName)
+            {
+                typeReferences.Add( parameterTypeName );
             }
         }
     }
